@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Checkout | ÉLÉGANCE PROM</title>
+
+<!-- PayPal -->
+<script src="https://www.paypal.com/sdk/js?client-id=test&currency=USD"></script>
+
+<style>
+:root {
+    --primary: #4c1d95;
+    --accent: #f472b6;
+    --bg: #faf5ff;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background: var(--bg);
+    margin: 0;
+    padding: 40px 20px;
+}
+
+.container {
+    max-width: 900px;
+    margin: auto;
+    background: white;
+    border-radius: 20px;
+    display: flex;
+    overflow: hidden;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+}
+
+.form {
+    flex: 1.2;
+    padding: 40px;
+}
+
+.summary {
+    flex: 1;
+    background: #fdf4ff;
+    padding: 40px;
+    border-left: 1px solid #eee;
+}
+
+h2 {
+    margin-top: 0;
+    color: var(--primary);
+}
+
+.input-group {
+    margin-bottom: 15px;
+}
+
+label {
+    font-size: 0.85rem;
+    color: gray;
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #eee;
+    border-radius: 8px;
+}
+
+.item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.total {
+    border-top: 2px solid #eee;
+    margin-top: 15px;
+    padding-top: 10px;
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+#paypal-button-container {
+    margin-top: 20px;
+}
+
+.back {
+    display: block;
+    text-align: center;
+    margin-top: 20px;
+    text-decoration: none;
+    color: gray;
+    font-size: 0.8rem;
+}
+
+.container {
+    max-width: 900px;
+    margin: auto;
+    background: white;
+    border-radius: 20px;
+    display: flex;
+    overflow: hidden;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+}
+
+/* MOBILE FIX */
+@media (max-width: 768px) {
+    .container {
+        flex-direction: column;
+    }
+
+    .form, .summary {
+        padding: 20px;
+    }
+
+    h2 {
+        font-size: 1.3rem;
+    }
+
+    input {
+        padding: 12px;
+    }
+
+    .total {
+        font-size: 1.1rem;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<!-- FORM -->
+<div class="form">
+    <h2>Shipping Details</h2>
+
+    <div class="input-group">
+        <label>Full Name</label>
+        <input type="text" placeholder="Your Name">
+    </div>
+
+    <div class="input-group">
+        <label>Email</label>
+        <input type="email" placeholder="example@email.com">
+    </div>
+
+    <div class="input-group">
+        <label>Address</label>
+        <input type="text" placeholder="Your Address">
+    </div>
+</div>
+
+<!-- SUMMARY -->
+<div class="summary">
+    <h2>Order Summary</h2>
+
+    <div id="items"></div>
+
+    <div class="total">
+        Total: <span id="totalPrice">$0</span>
+    </div>
+
+    <div id="paypal-button-container"></div>
+
+    <a href="landing.html" class="back">← Back to Shop</a>
+</div>
+
+</div>
+
+<script>
+// Get cart data
+const cart = JSON.parse(localStorage.getItem('dressCart')) || {};
+const totalAmount = localStorage.getItem('finalTotal') || 0;
+
+const itemsDiv = document.getElementById('items');
+
+// Show items
+Object.values(cart).forEach(item => {
+    itemsDiv.innerHTML += `
+        <div class="item">
+            <span>${item.name} (x${item.qty})</span>
+            <span>$${item.price * item.qty}</span>
+        </div>
+    `;
+});
+
+// Show total
+document.getElementById('totalPrice').innerText = "$" + totalAmount;
+
+// PayPal Button
+paypal.Buttons({
+    createOrder: function(data, actions) {
+        return actions.order.create({
+            purchase_units: [{
+                amount: {
+                    value: totalAmount
+                }
+            }]
+        });
+    },
+
+    onApprove: function(data, actions) {
+        return actions.order.capture().then(function(details) {
+            alert("Payment successful! Thank you " + details.payer.name.given_name);
+            localStorage.clear();
+            window.location.href = "landing.html";
+        });
+    },
+
+    onError: function(err) {
+        console.error(err);
+        alert("Payment failed. Try again.");
+    }
+
+}).render('#paypal-button-container');
+
+</script>
+
+</body>
+</html>
